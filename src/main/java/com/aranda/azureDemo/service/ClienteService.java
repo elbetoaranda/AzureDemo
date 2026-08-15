@@ -2,6 +2,7 @@ package com.aranda.azureDemo.service;
 
 import com.aranda.azureDemo.entity.Cliente;
 import com.aranda.azureDemo.repository.ClienteRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,10 @@ import java.util.Optional;
 
 @Service
 public class ClienteService {
+
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
+
     private ClienteRepository clienteRepository;
 
     public ClienteService(ClienteRepository clienteRepository) {
@@ -38,6 +43,9 @@ public class ClienteService {
         clienteRepository.findByEmail(cliente.getEmail()).ifPresent(c -> {
             throw new IllegalArgumentException("Ya existe un cliente con ese email");
         });
+
+        kafkaProducerService.enviarMensaje("aranda-topic", "Se ha recivido la peticion de crear un usuario nuevo");
+
         return clienteRepository.save(cliente);
     }
 
